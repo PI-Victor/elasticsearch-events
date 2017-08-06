@@ -1,0 +1,10 @@
+{
+  "Resources": {
+    "Elastic-Search-bucket": {
+      "Type": "AWS::S3::Bucket"
+    },
+    "Elastic-search-domain": {
+      "Type": "AWS::Elasticsearch::Domain"
+    }
+  }
+}
