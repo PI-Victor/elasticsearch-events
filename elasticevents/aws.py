@@ -1,19 +1,17 @@
 import boto3
-
+import uuid
 
 class ResourceClient():
     def __init__(self, resource, access_key, secret_key):
         self.resource = resource
         self.token = access_key
         self.secret = secret_key
-
-    def new_client(self):
-        client = boto3.client(
+        self.client = boto3.client(
                 self.resource,
                 aws_access_key_id=self.access_key,
                 aws_secret_access_key=self.secret_key,
         )
-        self.client = client
+
 
 def apply_cf_template(access_key, secret_key, cf_template):
     cf_client = ResourceClient(
@@ -22,9 +20,18 @@ def apply_cf_template(access_key, secret_key, cf_template):
         secret_key=secret_key,
     )
     with open(cf_template, 'r') as template:
-        cf_client.validate_template(
-            response = cf_client.validate_template(TemplateBody=template.read())
+        response = cf_client.validate_template(
+            TemplateBody=template.read()
         )
+        # create a new stack with a unique name to keep them from clashing.
+        stack_name = 'elastic-{}'.format(uuid.uuid1())
+        # NOTE: we rewind the cloudformation template file after validation so
+        # that we can create a new stack without having to reopen it.
+        template.seek(0)
+        # response = cf_client.create_stack(
+        #     StackName=stack_name,
+        #     TemplateBody=template.read(),
+        # )
 
 def connect(access_key, secret_key, cf_template, lambda_zip):
     apply_cf_template(access_key, secret_key, cf_template)
