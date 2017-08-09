@@ -102,3 +102,4 @@ ENV/
 .venv
 *.pyc
 *.iso
+elasticevents.zip
