@@ -1,10 +1,61 @@
 {
-  "Resources": {
-    "Elastic-Search-bucket": {
-      "Type": "AWS::S3::Bucket"
-    },
-    "Elastic-search-domain": {
-      "Type": "AWS::Elasticsearch::Domain"
-    }
-  }
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Resources": {
+		"ElasticSearchBucket": {
+			"Type": "AWS::S3::Bucket",
+			"Properties": {
+				"BucketName": "ElasticEventsBucket"
+			}
+		},
+		"ElasticSearchDomain": {
+			"Type": "AWS::Elasticsearch::Domain",
+			"Properties": {
+				"DomainName": "ElasticEventsDomain",
+				"ElasticsearchClusterConfig": {
+					"InstanceType": "t2.small.elasticsearch",
+					"InstanceCount": 1
+				},
+				"EBSOptions": {
+					"EBSEnabled": true,
+					"VolumeSize": 35,
+					"VolumeType": "io1",
+					"Iops": 1000
+				}
+			}
+		},
+		"LambdaElasticSearchEvents": {
+			"Type": "AWS::Lambda::Function",
+			"Properties": {
+				"FunctionName": "elasticevents",
+				"Runtime": "python3.6",
+				"Handler": "push_to_elasticsearch",
+				"Code": {
+					"ZipFile": {
+						"FnJoin": [
+							"\n",
+							[
+								"import os"
+							]
+						]
+					}
+				},
+				"Description": "Stores ds events in an Elasticsearch instance"
+			}
+		},
+		"S3EventsMapping": {
+			"Type": "AWS::Lambda::EventSourceMapping",
+			"Properties": {
+				"FunctionName": {
+					"Ref": "LambdaElasticSearchEvents"
+				},
+				"Enabled": true,
+				"EventSourceArn": {
+					"Fn::GetAtt": [
+						"ElasticSearchBucket",
+						"Arn"
+					]
+				}
+			}
+		}
+	}
 }
