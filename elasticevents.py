@@ -1,6 +1,7 @@
 import click
 
 from elasticevents import aws
+from elasticevents.utils import archive_lambda_folder, base64_encode_zip
 
 
 def validate_parameters(ctx, param, value):
@@ -27,15 +28,10 @@ def validate_parameters(ctx, param, value):
     type=click.Path(),
     help='Full path to a CloudFormation template.',
 )
-@click.option(
-    '--lambda-zip',
-    default='',
-    callback=validate_parameters,
-    type=click.Path(),
-    help='Full path to a lambda-zip file.',
-)
-def deploy_resources(access_key, secret_key, cf_template, lambda_zip):
-    aws.connect(access_key, secret_key, cf_template, lambda_zip)
+def deploy_resources(access_key, secret_key, cf_template):
+    aws.connect(access_key, secret_key, cf_template)
 
 if __name__ == '__main__':
+    path_zip_file = archive_lambda_folder()
+    base64_encode_zip(path_zip_file)
     deploy_resources()

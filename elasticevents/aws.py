@@ -1,7 +1,19 @@
 import boto3
 import uuid
 
+
+class S3BucketEvent():
+    '''S3BucketEvent represents an event that is triggered once an upload to a
+    S3 bucket has been done.
+    '''
+    def validate_event(self):
+        pass
+
+
 class ResourceClient():
+    '''ResourceClient is used as a base class for all resources that need to
+    manipulate AWS resources.
+    '''
     def __init__(self, resource, access_key, secret_key):
         self.resource = resource
         self.token = access_key
@@ -35,3 +47,8 @@ def apply_cf_template(access_key, secret_key, cf_template):
 
 def connect(access_key, secret_key, cf_template, lambda_zip):
     apply_cf_template(access_key, secret_key, cf_template)
+    upload_base64_lambda()
+
+def upload_base64_lambda(access_key, secret_key, lambda_zip):
+
+    pass
