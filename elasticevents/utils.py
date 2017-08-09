@@ -11,7 +11,8 @@ def archive_lambda_folder():
 def base64_encode_zip(zip_file_path):
     with open(zip_file_path, encoding='latin-1') as zip_file:
         # NOTE: super hackish, but some python lib in boto3 uses latin-1
-        # and this prevents a clean base64 encoding.
+        # and this prevents a clean base64 encoding. Also, i think this corrupts
+        # one of the libraries.
         # NOTE: also a downside is the large size this turns out to have.
         encoded = b64encode(bytes(zip_file.read(), 'utf-8'))
     return encoded
