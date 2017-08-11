@@ -23,7 +23,7 @@ In your CloudFormation dashboard, get the cloudformation stack name and pass it
 to the cli, in order to delete it.
 
 ```
-python3 elasticevents.py deploy --secret-key AWS_SECRET_KEY --access-key AWS_ACCESS_KEY --cf-stack MY_DEPLOYED_STACK_NAME
+python3 elasticevents.py delete --secret-key AWS_SECRET_KEY --access-key AWS_ACCESS_KEY --cf-stack MY_DEPLOYED_STACK_NAME
 ```
 
 #### Triggering
