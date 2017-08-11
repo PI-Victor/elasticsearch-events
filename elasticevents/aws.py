@@ -4,21 +4,11 @@ import uuid
 
 from .utils import archive_lambda_folder, base64_encode_zip
 
-class S3BucketEvent():
-    '''S3BucketEvent
-
-    Represents an event that is triggered once an upload to a S3 bucket has
-    been done.
-    '''
-    def validate_event(self):
-        pass
-
 
 class ResourceClient():
     '''ResourceClient
 
-    Is used as a client base class for all resources that need to manipulate
-    AWS resources.
+    Is used as a client base class for all AWS resources.
     '''
     def __init__(self, resource, access_key, secret_key):
         self.resource = resource
