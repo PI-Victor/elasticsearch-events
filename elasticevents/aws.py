@@ -41,10 +41,16 @@ def apply_cf_template(access_key, secret_key, cf_template):
         # that we can create a new stack without having to reopen it.
         template.seek(0)
         # NOTE: as as the observation above at validation.
-        cf_instance.client.create_stack(
-            StackName=stack_name,
-            TemplateBody=template.read(),
-        )
+        try:
+            cf_instance.client.create_stack(
+                StackName=stack_name,
+                TemplateBody=template.read(),
+                Capabilities=[
+                    'CAPABILITY_IAM',
+                ],
+            )
+        except Exception as e:
+            raise e
 
 def deploy(access_key, secret_key, cf_template):
     apply_cf_template(access_key, secret_key, cf_template)
@@ -56,9 +62,12 @@ def delete(access_key, secret_key, cf_stack_name):
         access_key=access_key,
         secret_key=secret_key,
     )
-    cf_instance.client.delete_stack(
-        StackName=cf_stack_name,
-    )
+    try:
+        cf_instance.client.delete_stack(
+            StackName=cf_stack_name,
+        )
+    except Exception as e:
+        raise(e)
 
 def update_lambda_function(access_key, secret_key):
     lambda_zip_file_path = archive_lambda_folder()
@@ -68,12 +77,16 @@ def update_lambda_function(access_key, secret_key):
         access_key=access_key,
         secret_key=secret_key,
     )
-    response = lambda_instance.client.update_function_code(
-        FunctionName = 'elasticevents',
-        ZipFile=b64encoded_zip,
-    )
+    print('Trying to update the lambda function...')
+    try:
+        lambda_instance.client.update_function_code(
+            FunctionName = 'elasticevents',
+            ZipFile=b64encoded_zip,
+        )
+    except Exception as e:
+        raise e
 
-def trigger_s3_resource(access_key, secret_key):
+def trigger_s3_resource(access_key, secret_key, bucket, key):
     lambda_client = ResourceClient(
         resource='s3',
         access_key=access_key,
