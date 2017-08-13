@@ -19,7 +19,7 @@ def cli():
     help='Secret to be used for connecting to AWS resources.',
 )
 @click.option(
-    '--cf-template',
+    '--template',
     default='',
     type=click.Path(),
     help='Full path to a CloudFormation template.',
@@ -58,13 +58,13 @@ def trigger(access_key, secret_key, bucket):
     help='Secret to be used for connecting to AWS resources.',
 )
 @click.option(
-    '--cf-stack',
+    '--stack',
     default='',
     type=click.Path(),
     help='The name of the CloudFormation stack that you want to delete',
 )
-def delete(access_key, secret_key, cf_stack):
-    aws.delete(access_key, secret_key, cf_stack)
+def delete(access_key, secret_key, stack):
+    aws.delete(access_key, secret_key, stack)
 
 @cli.command()
 @click.option(
@@ -76,12 +76,6 @@ def delete(access_key, secret_key, cf_stack):
     '--secret-key',
     default='',
     help='Secret to be used for connecting to AWS resources.',
-)
-@click.option(
-    '--cf-stack',
-    default='',
-    type=click.Path(),
-    help='The name of the CloudFormation stack that you want to delete',
 )
 def update(access_key, secret_key):
     aws.update_lambda(access_key, secret_key)
