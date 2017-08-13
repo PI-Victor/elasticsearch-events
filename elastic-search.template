@@ -1,16 +1,12 @@
 {
 	"AWSTemplateFormatVersion": "2010-09-09",
 	"Resources": {
-		"ElasticSearchBucket": {
-			"Type": "AWS::S3::Bucket",
-			"Properties": {
-				"BucketName": "ElasticEventsBucket"
-			}
+		"S3EventsBucket": {
+			"Type": "AWS::S3::Bucket"
 		},
-		"ElasticSearchDomain": {
+		"S3EventsESDomain": {
 			"Type": "AWS::Elasticsearch::Domain",
 			"Properties": {
-				"DomainName": "ElasticEventsDomain",
 				"ElasticsearchClusterConfig": {
 					"InstanceType": "t2.small.elasticsearch",
 					"InstanceCount": 1
@@ -23,38 +19,60 @@
 				}
 			}
 		},
+		"ElasticEventsIAMRole": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [{
+						"Effect": "Allow",
+						"Principal": {
+							"Service": ["lambda.amazonaws.com"]
+						},
+						"Action": ["sts:AssumeRole"]
+					}]
+				},
+				"Path": "/",
+				"Policies": [{
+					"PolicyName": {
+						"Fn::Join": ["-", [ {	"Ref": "AWS::StackName" }, "ESEventsAcces" ] ] },
+					"PolicyDocument": {
+						"Version": "2012-10-17",
+						"Statement": [{
+							"Effect": "Allow",
+							"Action": [
+								"s3:ListAllMyBuckets",
+								"s3:GetBucketLocation"
+							],
+							"Resource": [
+								"arn:aws:s3:::*"
+							]
+						},
+						{
+							"Effect": "Allow",
+							"Action": "*",
+							"Resource": [
+								"arn:aws:es:::*"
+							]
+						}
+					]
+					}
+				}]
+			}
+		},
 		"LambdaElasticSearchEvents": {
 			"Type": "AWS::Lambda::Function",
 			"Properties": {
-				"FunctionName": "elasticevents",
+				"FunctionName": "elasticlambda",
 				"Runtime": "python3.6",
-				"Handler": "push_to_elasticsearch",
+				"Handler": "elasticlambda.lambda_handler",
+				"Role": {
+					"Fn::GetAtt": ["ElasticEventsIAMRole", "Arn"]
+				},
 				"Code": {
-					"ZipFile": {
-						"FnJoin": [
-							"\n",
-							[
-								"import os"
-							]
-						]
-					}
+					"ZipFile": "test"
 				},
 				"Description": "Stores ds events in an Elasticsearch instance"
-			}
-		},
-		"S3EventsMapping": {
-			"Type": "AWS::Lambda::EventSourceMapping",
-			"Properties": {
-				"FunctionName": {
-					"Ref": "LambdaElasticSearchEvents"
-				},
-				"Enabled": true,
-				"EventSourceArn": {
-					"Fn::GetAtt": [
-						"ElasticSearchBucket",
-						"Arn"
-					]
-				}
 			}
 		}
 	}
