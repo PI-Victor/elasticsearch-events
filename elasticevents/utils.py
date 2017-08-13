@@ -8,8 +8,8 @@ def archive_lambda_folder():
     # NOTE: this should have some error handling, but we skip it for now.
     return make_archive('elasticevents', 'zip', lambda_folder)
 
-def base64_encode_zip(zip_file_path):
-    with open(zip_file_path, encoding='latin-1') as zip_file:
+def base64_encode(file_path):
+    with open(file_path, encoding='latin-1') as zip_file:
         # NOTE: super hackish, but some python lib in boto3 uses latin-1
         # and this prevents a clean base64 encoding. Also, i think this corrupts
         # one of the libraries.

@@ -2,7 +2,7 @@ import boto3
 
 import uuid
 
-from .utils import archive_lambda_folder, base64_encode_zip
+from .utils import archive_lambda_folder, base64_encode
 
 
 class ResourceClient():
@@ -42,7 +42,7 @@ def apply_cf_template(access_key, secret_key, cf_template):
         template.seek(0)
         # NOTE: as as the observation above at validation.
         try:
-            cf_instance.client.create_stack(
+            response = cf_instance.client.create_stack(
                 StackName=stack_name,
                 TemplateBody=template.read(),
                 Capabilities=[
@@ -52,9 +52,10 @@ def apply_cf_template(access_key, secret_key, cf_template):
         except Exception as e:
             raise e
 
+        print("The response for create stack: {}".format(response))
+
 def deploy(access_key, secret_key, cf_template):
     apply_cf_template(access_key, secret_key, cf_template)
-    update_lambda_function(access_key, secret_key)
 
 def delete(access_key, secret_key, cf_stack_name):
     cf_instance = ResourceClient(
@@ -63,15 +64,18 @@ def delete(access_key, secret_key, cf_stack_name):
         secret_key=secret_key,
     )
     try:
-        cf_instance.client.delete_stack(
+        response = cf_instance.client.delete_stack(
             StackName=cf_stack_name,
         )
     except Exception as e:
         raise(e)
 
-def update_lambda_function(access_key, secret_key):
+    print("The response for delete stack: {}".format(response))
+
+
+def update_lambda(access_key, secret_key):
     lambda_zip_file_path = archive_lambda_folder()
-    b64encoded_zip = base64_encode_zip(lambda_zip_file_path)
+    b64encoded_zip = base64_encode(lambda_zip_file_path)
     lambda_instance = ResourceClient(
         resource='lambda',
         access_key=access_key,
@@ -79,16 +83,30 @@ def update_lambda_function(access_key, secret_key):
     )
     print('Trying to update the lambda function...')
     try:
-        lambda_instance.client.update_function_code(
-            FunctionName = 'elasticevents',
+        response = lambda_instance.client.update_function_code(
+            FunctionName = 'elasticlambda',
             ZipFile=b64encoded_zip,
         )
     except Exception as e:
         raise e
 
-def trigger_s3_resource(access_key, secret_key, bucket, key):
-    lambda_client = ResourceClient(
+    print("The response for update_function_code: {}".format(response))
+
+def trigger_s3_resource(access_key, secret_key, bucket):
+    test_bytes = ('aws.py')
+    s3_instance = ResourceClient(
         resource='s3',
         access_key=access_key,
         secret_key=secret_key,
     )
+    test_key = 'test-file-{}'.format(uuid.uuid1())
+    try:
+        response = s3_instance.client.put_object(
+            Bucket=bucket,
+            Body=test_bytes,
+            Key=test_key,
+        )
+    except Exception as e:
+        raise e
+
+    print("The response for s3 put object: {}".format(response))

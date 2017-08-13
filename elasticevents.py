@@ -38,8 +38,13 @@ def deploy(access_key, secret_key, cf_template):
     default='',
     help='Secret to be used for connecting to AWS resources.',
 )
-def trigger(access_key, secret_key):
-    aws.trigger_s3_resource(access_key, secret_key)
+@click.option(
+    '--bucket',
+    default='',
+    help='Name of the bucket that is used to trigger the lambda function.',
+)
+def trigger(access_key, secret_key, bucket):
+    aws.trigger_s3_resource(access_key, secret_key, bucket)
 
 @cli.command()
 @click.option(
@@ -60,6 +65,26 @@ def trigger(access_key, secret_key):
 )
 def delete(access_key, secret_key, cf_stack):
     aws.delete(access_key, secret_key, cf_stack)
+
+@cli.command()
+@click.option(
+    '--access-key',
+    default='',
+    help='Token to be used for connecting to AWS resources.',
+)
+@click.option(
+    '--secret-key',
+    default='',
+    help='Secret to be used for connecting to AWS resources.',
+)
+@click.option(
+    '--cf-stack',
+    default='',
+    type=click.Path(),
+    help='The name of the CloudFormation stack that you want to delete',
+)
+def update(access_key, secret_key):
+    aws.update_lambda(access_key, secret_key)
 
 if __name__ == '__main__':
     cli()
